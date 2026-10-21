@@ -33,6 +33,7 @@ All text and data live in `client/src/content/`:
 
 - `profile.ts` — email, booking link, profile links, Google Scholar metrics and citations per year.
 - `publications.ts` — the full publication list. Add a paper by appending an entry; mark `selected: true` to feature it.
-- `strings.ts` — every sentence on the site, in English (`en`) and Persian (`fa`).
+- `strings.ts` — every sentence on the site, in English (`en`), Persian (`fa`) and Central Kurdish / Sorani (`ckb`), including each page's search-result description.
+- `languages.ts` — the list of languages, their URL prefixes and digit styles.
 
-The site uses real paths (`/about`, `/fa/about`). Persian pages live under `/fa`. `scripts/postbuild.mjs` writes an `index.html` for every page in both languages, plus `404.html`, `sitemap.xml` and `robots.txt`. Pushing to `main` redeploys automatically.
+The site uses real paths: English at `/about/`, Persian at `/fa/about/`, Sorani at `/ckb/about/`. At build time `scripts/postbuild.mjs` pre-renders every page in every language into its own `index.html` (full text, `lang`/`dir`, title, description, canonical and `hreflang` links), and writes `404.html`, `sitemap.xml` (with language alternates) and `robots.txt`. Pushing to `main` redeploys automatically.

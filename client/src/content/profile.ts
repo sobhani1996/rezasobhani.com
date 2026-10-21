@@ -13,7 +13,7 @@ export const profile = {
 
 // Google Scholar snapshot.
 export const metrics = {
-  asOf: { en: "October 2026", fa: "مهر ۱۴۰۵" },
+  asOf: { en: "October 2026", fa: "مهر ۱۴۰۵", ckb: "تشرینی یەکەمی ٢٠٢٦" },
   citations: 1015,
   hIndex: 17,
   i10Index: 34,

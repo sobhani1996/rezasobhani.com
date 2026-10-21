@@ -5,7 +5,8 @@ import { Route, Router, Switch, useLocation } from "wouter";
 import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { LanguageProvider, languageFromPath } from "./contexts/LanguageContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
+import { languageFromPath, languageInfo } from "./content/languages";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Research from "./pages/Research";
@@ -37,7 +38,7 @@ function SiteRouter() {
 
   return (
     <LanguageProvider language={language}>
-      <Router base={language === "fa" ? "/fa" : ""}>
+      <Router base={languageInfo(language).prefix}>
         <Layout>
           <Switch>
             <Route path="/" component={Home} />

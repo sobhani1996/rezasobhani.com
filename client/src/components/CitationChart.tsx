@@ -72,7 +72,7 @@ export default function CitationChart() {
                     </text>
                   )}
                   <text x={x + barW / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--muted-foreground)">
-                    {language === "fa" ? num(d.year).replace(/٬|,/g, "") : `'${String(d.year).slice(2)}`}
+                    {language === "en" ? `'${String(d.year).slice(2)}` : num(d.year).replace(/٬|,/g, "")}
                   </text>
                   <rect
                     x={PAD.left + i * slot}

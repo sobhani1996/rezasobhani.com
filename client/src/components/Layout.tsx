@@ -1,52 +1,118 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Languages, Mail } from "lucide-react";
+import { Check, ChevronDown, Languages, Mail, Menu, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { profile } from "@/content/profile";
-import { LinkedinIcon, ResearchGateIcon, ScholarIcon, useOtherLanguageHref } from "@/components/site";
+import { strings } from "@/content/strings";
+import { languageInfo, languages, type Language } from "@/content/languages";
+import { LinkedinIcon, ResearchGateIcon, ScholarIcon, useLanguageHref } from "@/components/site";
+
+function LanguageMenu() {
+  const { s, language } = useLanguage();
+  const hrefFor = useLanguageHref();
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "rounded-full gap-1.5 font-medium")} aria-label={s.nav.language}>
+        <Languages className="size-4" />
+        {languageInfo(language).label}
+        <ChevronDown className="size-3.5 opacity-60" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-36">
+        {languages.map((l) => (
+          <DropdownMenuItem key={l.code} asChild>
+            <Link href={hrefFor(l.code)} hrefLang={l.code} lang={l.code} dir={l.dir} className="flex items-center justify-between gap-4 font-persian">
+              {l.label}
+              {l.code === language && <Check className="size-4 text-primary" />}
+            </Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** On English pages, offers the Sorani or Persian version to visitors whose browser prefers it. */
+function LanguageSuggestion() {
+  const { language } = useLanguage();
+  const hrefFor = useLanguageHref();
+  const [suggested, setSuggested] = useState<Language | null>(null);
+
+  useEffect(() => {
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem("lang-suggestion-dismissed") === "1";
+    } catch {}
+    // Someone already on the Persian or Kurdish site has chosen their language.
+    if (dismissed || language !== "en") {
+      setSuggested(null);
+      return;
+    }
+    const preferred = (navigator.languages ?? [navigator.language]).map((l) => l.toLowerCase());
+    const match = preferred.find((l) => l.startsWith("ckb") || l.startsWith("ku") || l.startsWith("fa"));
+    const code: Language | null = match ? (match.startsWith("fa") ? "fa" : "ckb") : null;
+    setSuggested(code);
+  }, [language]);
+
+  if (!suggested) return null;
+  const t = strings[suggested].nav.suggest;
+  const dismiss = () => {
+    try {
+      localStorage.setItem("lang-suggestion-dismissed", "1");
+    } catch {}
+    setSuggested(null);
+  };
+
+  return (
+    <div lang={suggested} dir="rtl" className="font-persian border-b border-primary/20 bg-secondary">
+      <div className="container flex items-center justify-between gap-3 py-2 text-sm">
+        <p className="text-secondary-foreground">
+          {t.text}{" "}
+          <Link href={hrefFor(suggested)} onClick={dismiss} className="font-semibold text-primary underline underline-offset-4">
+            {t.action}
+          </Link>
+        </p>
+        <button type="button" onClick={dismiss} aria-label={t.dismiss} className="grid size-8 shrink-0 place-items-center rounded-full hover:bg-background/60">
+          <X className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [rawLocation] = useLocation();
   // GitHub Pages serves /about as /about/; compare without the trailing slash.
   const location = rawLocation.replace(/\/+$/, "") || "/";
+  const isActive = (path: string) => location === (path.replace(/\/+$/, "") || "/");
   const [menuOpen, setMenuOpen] = useState(false);
-  const { s, language } = useLanguage();
-  const otherHref = useOtherLanguageHref();
+  const { s } = useLanguage();
+  const hrefFor = useLanguageHref();
 
   useEffect(() => setMenuOpen(false), [location]);
 
   const navItems = [
-    { label: s.nav.about, path: "/about" },
-    { label: s.nav.research, path: "/research" },
-    { label: s.nav.publications, path: "/publications" },
-    { label: s.nav.contact, path: "/contact" },
+    { label: s.nav.about, path: "/about/" },
+    { label: s.nav.research, path: "/research/" },
+    { label: s.nav.publications, path: "/publications/" },
+    { label: s.nav.contact, path: "/contact/" },
   ];
-
-  const languageSwitch = (
-    <Link
-      href={otherHref}
-      hrefLang={language === "fa" ? "en" : "fa"}
-      aria-label={s.nav.switchLabel}
-      className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "rounded-full gap-1.5 font-medium", language === "en" ? "font-persian" : "font-sans")}
-    >
-      <Languages className="size-4" />
-      {s.nav.switchTo}
-    </Link>
-  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">
-        {language === "fa" ? "رفتن به محتوا" : "Skip to content"}
+        {s.nav.skip}
       </a>
+
+      <LanguageSuggestion />
 
       <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/85 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3 min-w-0">
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground font-serif text-sm font-semibold tracking-wide">
-              {language === "fa" ? "س‌س" : "SRS"}
+              {s.nav.monogram}
             </span>
             <span className="min-w-0 leading-tight">
               <span className="block truncate font-serif text-base font-semibold text-ink">{s.name}</span>
@@ -59,21 +125,21 @@ export default function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.path}
                 href={item.path}
-                aria-current={location === item.path ? "page" : undefined}
+                aria-current={isActive(item.path) ? "page" : undefined}
                 className={cn(
                   "rounded-full px-3.5 py-2 text-sm font-medium transition-colors hover:text-primary",
-                  location === item.path ? "bg-secondary text-primary" : "text-muted-foreground",
+                  isActive(item.path) ? "bg-secondary text-primary" : "text-muted-foreground",
                 )}
               >
                 {item.label}
               </Link>
             ))}
             <span className="mx-2 h-5 w-px bg-border" />
-            {languageSwitch}
+            <LanguageMenu />
           </nav>
 
           <div className="flex items-center gap-1 md:hidden">
-            {languageSwitch}
+            <LanguageMenu />
             <button
               type="button"
               className="grid size-10 place-items-center rounded-full text-foreground hover:bg-muted"
@@ -95,7 +161,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   href={item.path}
                   className={cn(
                     "rounded-lg px-3 py-3 text-base font-medium",
-                    location === item.path ? "bg-secondary text-primary" : "text-foreground hover:bg-muted",
+                    isActive(item.path) ? "bg-secondary text-primary" : "text-foreground hover:bg-muted",
                   )}
                 >
                   {item.label}
@@ -155,8 +221,17 @@ export default function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
         <div className="border-t border-primary-foreground/15">
-          <div className="container py-5 text-xs text-primary-foreground/60">
-            © {new Date().getFullYear()} {s.name}. {s.footer.rights}
+          <div className="container flex flex-wrap items-center justify-between gap-3 py-5 text-xs text-primary-foreground/60">
+            <span suppressHydrationWarning>
+              © {new Date().getFullYear()} {s.name}. {s.footer.rights}
+            </span>
+            <nav aria-label={s.nav.language} className="flex items-center gap-4">
+              {languages.map((l) => (
+                <Link key={l.code} href={hrefFor(l.code)} hrefLang={l.code} lang={l.code} className="font-persian text-sm text-primary-foreground/80 hover:text-primary-foreground hover:underline underline-offset-4">
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
       </footer>

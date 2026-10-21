@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useLanguage } from "@/contexts/LanguageContext";
 import { profile } from "@/content/profile";
 import { strings } from "@/content/strings";
-import { LinkedinIcon, PageHeader, ResearchGateIcon, ScholarIcon, usePageTitle } from "@/components/site";
+import { LinkedinIcon, PageHeader, RegionalCallout, ResearchGateIcon, ScholarIcon, usePageTitle } from "@/components/site";
 
 const reasonIcons = { collab: FlaskConical, students: GraduationCap, policy: Landmark, talks: Mic } as const;
 
@@ -96,6 +96,15 @@ export default function Contact() {
           </button>
         </div>
       </PageHeader>
+
+      <RegionalCallout
+        action={
+          <button type="button" onClick={() => chooseReason("collab")} className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>
+            {s.regional?.cta}
+            <ArrowRight className="rtl:rotate-180" />
+          </button>
+        }
+      />
 
       {/* Reasons */}
       <section className="container py-16 md:py-20">

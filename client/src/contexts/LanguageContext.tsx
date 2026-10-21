@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import { strings, type Strings } from "@/content/strings";
+import { formatNumber, languageInfo, type Language } from "@/content/languages";
 
-export type Language = "en" | "fa";
+export { languageFromPath, type Language } from "@/content/languages";
 
 interface LanguageContextType {
   language: Language;
@@ -13,18 +14,16 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const languageFromPath = (path: string): Language =>
-  path === "/fa" || path.startsWith("/fa/") ? "fa" : "en";
-
 export function LanguageProvider({ language, children }: { language: Language; children: ReactNode }) {
-  const dir = language === "fa" ? "rtl" : "ltr";
+  const { dir } = languageInfo(language);
   const s = strings[language];
-  const num = (n: number) => n.toLocaleString(language === "fa" ? "fa-IR" : "en-US");
+  const num = (n: number) => formatNumber(n, language);
 
   useEffect(() => {
     document.documentElement.dir = dir;
     document.documentElement.lang = language;
-    document.body.classList.toggle("font-persian", language === "fa");
+    // Persian and Sorani share the Vazirmatn font, which covers every Sorani letter.
+    document.body.classList.toggle("font-persian", dir === "rtl");
   }, [language, dir]);
 
   return <LanguageContext.Provider value={{ language, dir, s, num }}>{children}</LanguageContext.Provider>;

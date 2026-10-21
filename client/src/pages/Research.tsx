@@ -42,7 +42,7 @@ export default function Research() {
                       </li>
                     ))}
                   </ul>
-                  <ArrowLink href={`/publications?topic=${topic}`} className="mt-6">
+                  <ArrowLink href={`/publications/?topic=${topic}`} className="mt-6">
                     {s.research.viewAll}
                   </ArrowLink>
                 </div>

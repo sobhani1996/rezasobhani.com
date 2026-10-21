@@ -7,7 +7,7 @@ import { metrics } from "@/content/profile";
 import { publications, topicOrder, type Topic } from "@/content/publications";
 import CitationChart from "@/components/CitationChart";
 import PublicationItem from "@/components/PublicationItem";
-import { ArrowLink, SectionTitle, usePageTitle } from "@/components/site";
+import { ArrowLink, RegionalCallout, SectionTitle, usePageTitle } from "@/components/site";
 
 export const topicIcons: Record<Topic, typeof Leaf> = {
   sustainable: Leaf,
@@ -44,11 +44,11 @@ export default function Home() {
             <p className="mt-8 max-w-xl font-serif text-2xl leading-snug text-foreground/90 italic text-balance md:text-[1.75rem]">{s.home.headline}</p>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg text-pretty">{s.home.lede}</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/research" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>
+              <Link href="/research/" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>
                 {s.home.ctaResearch}
                 <ArrowRight className="rtl:rotate-180" />
               </Link>
-              <Link href="/contact" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full bg-background/60 px-7 text-base")}>
+              <Link href="/contact/" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full bg-background/60 px-7 text-base")}>
                 {s.home.ctaContact}
               </Link>
             </div>
@@ -114,9 +114,18 @@ export default function Home() {
         </div>
       </section>
 
+      <RegionalCallout
+        action={
+          <Link href="/contact/" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>
+            {s.regional?.cta}
+            <ArrowRight className="rtl:rotate-180" />
+          </Link>
+        }
+      />
+
       {/* Themes */}
       <section className="container py-16 md:py-24">
-        <SectionTitle title={s.home.themesTitle} link={{ href: "/research", label: s.home.themesLink }} />
+        <SectionTitle title={s.home.themesTitle} link={{ href: "/research/", label: s.home.themesLink }} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {topicOrder.map((topic) => {
             const Icon = topicIcons[topic];
@@ -124,7 +133,7 @@ export default function Home() {
             return (
               <Link
                 key={topic}
-                href={`/research#${topic}`}
+                href={`/research/#${topic}`}
                 className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
               >
                 <span className="grid size-10 place-items-center rounded-xl bg-secondary text-primary">
@@ -143,7 +152,7 @@ export default function Home() {
       {/* Recent publications */}
       <section className="border-y border-border/70 bg-muted/60">
         <div className="container py-16 md:py-20">
-          <SectionTitle title={s.home.recentTitle} link={{ href: "/publications", label: s.home.recentLink }} />
+          <SectionTitle title={s.home.recentTitle} link={{ href: "/publications/", label: s.home.recentLink }} />
           <div className="grid gap-8 md:grid-cols-2">
             {recent.map((pub) => (
               <div key={pub.title} className="rounded-2xl border border-border bg-card p-6">
@@ -161,7 +170,7 @@ export default function Home() {
             <h2 className="text-2xl font-semibold text-ink md:text-3xl">{s.home.contactTitle}</h2>
             <p className="mt-2 text-muted-foreground md:text-lg">{s.home.contactBody}</p>
           </div>
-          <ArrowLink href="/contact" className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 rounded-full px-7 text-base text-primary-foreground hover:no-underline")}>
+          <ArrowLink href="/contact/" className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 rounded-full px-7 text-base text-primary-foreground hover:no-underline")}>
             {s.home.contactBtn}
           </ArrowLink>
         </div>

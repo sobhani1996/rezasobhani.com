@@ -1,10 +1,11 @@
 // Small building blocks shared by every page.
 import { useEffect, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Strings } from "@/content/strings";
+import { languageInfo, type Language } from "@/content/languages";
 
 /** Sets the browser tab title for the current page. */
 export function usePageTitle(key: keyof Strings["meta"]) {
@@ -14,12 +15,11 @@ export function usePageTitle(key: keyof Strings["meta"]) {
   }, [s, key]);
 }
 
-/** Absolute href of the current page in the other language. */
-export function useOtherLanguageHref() {
-  const { language } = useLanguage();
+/** Absolute href of the current page in another language, in the trailing-slash form GitHub Pages serves without a redirect. */
+export function useLanguageHref() {
   const [path] = useLocation();
   const rest = path.replace(/\/+$/, "");
-  return language === "fa" ? `~${rest || "/"}` : `~/fa${rest}`;
+  return (code: Language) => `~${languageInfo(code).prefix}${rest}/`;
 }
 
 export function PageHeader({ eyebrow, title, lede, children }: { eyebrow?: string; title: string; lede: string; children?: ReactNode }) {
@@ -31,6 +31,26 @@ export function PageHeader({ eyebrow, title, lede, children }: { eyebrow?: strin
           <h1 className="text-4xl md:text-6xl font-semibold leading-[1.05] text-ink">{title}</h1>
           <p className="mt-6 text-lg md:text-xl text-muted-foreground leading-relaxed text-pretty">{lede}</p>
           {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Call for collaboration aimed at one region; renders only for languages that define `regional`. */
+export function RegionalCallout({ action }: { action: ReactNode }) {
+  const { s } = useLanguage();
+  if (!s.regional) return null;
+  return (
+    <section className="container pt-16 md:pt-24">
+      <div className="grid gap-6 rounded-3xl border-2 border-primary/25 bg-secondary/70 p-6 md:grid-cols-[auto_1fr] md:p-10">
+        <span className="grid size-12 place-items-center rounded-full bg-primary text-primary-foreground">
+          <Handshake className="size-6" />
+        </span>
+        <div>
+          <h2 className="text-2xl font-semibold text-ink md:text-3xl">{s.regional.title}</h2>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-secondary-foreground md:text-lg">{s.regional.body}</p>
+          <div className="mt-6">{action}</div>
         </div>
       </div>
     </section>

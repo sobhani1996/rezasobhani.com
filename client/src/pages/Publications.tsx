@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearch } from "wouter";
 import { ExternalLink, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,11 +15,16 @@ type Sort = "newest" | "cited";
 export default function Publications() {
   const { s, num } = useLanguage();
   usePageTitle("publications");
-  const params = new URLSearchParams(useSearch());
-  const initialTopic = params.get("topic");
-  const [filter, setFilter] = useState<Filter>(topicOrder.includes(initialTopic as Topic) ? (initialTopic as Topic) : "all");
+  const search = useSearch();
+  const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("newest");
+
+  // Apply ?topic=… after mount, so the pre-rendered HTML (always "All") and the first browser render match.
+  useEffect(() => {
+    const topic = new URLSearchParams(search).get("topic");
+    if (topicOrder.includes(topic as Topic)) setFilter(topic as Topic);
+  }, [search]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();

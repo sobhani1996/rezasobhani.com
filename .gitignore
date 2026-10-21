@@ -105,3 +105,6 @@ temp/
 *.sqlite
 *.sqlite3
 .project-config.json
+
+# Build-time render bundle
+dist-ssr/
