@@ -1,7 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Link } from "wouter";
-import { ArrowRight, CalendarDays, Check, CircleCheck, Contact as ContactIcon, Copy, FlaskConical, GraduationCap, Landmark, Loader2, Mail, MapPin, Mic, Navigation, Send } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Contact as ContactIcon, Copy, FlaskConical, GraduationCap, Landmark, Mail, MapPin, Mic, Navigation, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -11,6 +10,11 @@ import { strings } from "@/content/strings";
 import { LinkedinIcon, PageHeader, ResearchGateIcon, ScholarIcon, usePageTitle } from "@/components/site";
 
 const reasonIcons = { collab: FlaskConical, students: GraduationCap, policy: Landmark, talks: Mic } as const;
+
+function mailto(subject: string, body = "") {
+  const params = new URLSearchParams({ subject, body }).toString().replace(/\+/g, "%20");
+  return `mailto:${profile.email}?${params}`;
+}
 
 function downloadVCard() {
   const en = strings.en;
@@ -40,7 +44,6 @@ export default function Contact() {
   const [topic, setTopic] = useState(c.reasons[0].key);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
   const copyEmail = async () => {
     try {
@@ -59,49 +62,22 @@ export default function Contact() {
     window.setTimeout(() => formRef.current?.querySelector<HTMLInputElement>("input[name=name]")?.focus(), 400);
   };
 
-  // Posts every field as JSON to FormSubmit's AJAX endpoint, which emails it to info@rezasobhani.com.
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    // A filled honeypot means a bot: silently do nothing.
-    if (String(data.get("_honey") ?? "") !== "") return;
-
+    const data = new FormData(e.currentTarget);
     const name = String(data.get("name") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
+    const affiliation = String(data.get("affiliation") ?? "").trim();
     const message = String(data.get("message") ?? "").trim();
-    if (!name || !form.querySelector<HTMLInputElement>("input[name=email]")!.checkValidity() || !email || !message || !data.get("consent")) {
+    if (!name || !email || !message) {
       setError(c.required);
       return;
     }
     setError("");
-    setStatus("sending");
-    const reason = strings.en.contact.reasons.find((r) => r.key === topic) ?? strings.en.contact.reasons[0];
-    try {
-      const res = await fetch(profile.formEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          topic: reason.title,
-          name,
-          email,
-          phone: String(data.get("phone") ?? "").trim(),
-          affiliation: String(data.get("affiliation") ?? "").trim(),
-          message,
-          consent: "yes",
-          language: language === "fa" ? "Persian" : "English",
-          _subject: `New enquiry from ${name} (rezasobhani.com)`,
-          _template: "table",
-          _replyto: email,
-          _honey: "",
-        }),
-      });
-      const result = await res.json().catch(() => ({}));
-      if (!res.ok || String(result.success) !== "true") throw new Error(result.message ?? res.statusText);
-      setStatus("sent");
-    } catch {
-      setStatus("failed");
-    }
+    const reason = c.reasons.find((r) => r.key === topic) ?? c.reasons[0];
+    const signature = [name, affiliation, email].filter(Boolean).join("\n");
+    window.location.href = mailto(`${reason.subject} — ${name}`, `${message}\n\n—\n${signature}`);
+    toast(c.opened);
   };
 
   const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(profile.mapQuery)}&z=15&hl=${language}&output=embed`;
@@ -152,20 +128,9 @@ export default function Contact() {
       {/* Form + direct contact */}
       <section ref={formRef} className="container scroll-mt-20">
         <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-          {status === "sent" ? (
-            <div role="status" className="flex flex-col items-start justify-center rounded-3xl border border-primary/30 bg-secondary/60 p-6 md:p-10">
-              <CircleCheck className="size-12 text-primary" />
-              <h2 className="mt-5 text-2xl font-semibold text-ink md:text-3xl">{c.sentTitle}</h2>
-              <button type="button" onClick={() => setStatus("idle")} className={cn(buttonVariants({ variant: "outline" }), "mt-6 rounded-full bg-background")}>
-                {c.sendAnother}
-              </button>
-            </div>
-          ) : (
           <form onSubmit={onSubmit} noValidate className="rounded-3xl border border-border bg-card p-6 md:p-10">
             <h2 className="text-2xl font-semibold text-ink md:text-3xl">{c.formTitle}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{c.formNote}</p>
-            {/* Spam trap: hidden from people, filled in by bots; FormSubmit drops messages that fill it. */}
-            <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
             <fieldset className="mt-8">
               <legend className="mb-3 text-sm font-medium">{c.topic}</legend>
@@ -194,11 +159,7 @@ export default function Contact() {
                 <span className="mb-1.5 block text-sm font-medium">{c.emailField}</span>
                 <input name="email" type="email" required autoComplete="email" dir="ltr" className={cn(field, "text-start rtl:text-end")} />
               </label>
-              <label className="block">
-                <span className="mb-1.5 block text-sm font-medium">{c.phone}</span>
-                <input name="phone" type="tel" autoComplete="tel" dir="ltr" className={cn(field, "text-start rtl:text-end")} />
-              </label>
-              <label className="block">
+              <label className="block sm:col-span-2">
                 <span className="mb-1.5 block text-sm font-medium">{c.affiliation}</span>
                 <input name="affiliation" autoComplete="organization" className={field} />
               </label>
@@ -208,38 +169,16 @@ export default function Contact() {
               </label>
             </div>
 
-            <label className="mt-5 flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
-              <input name="consent" type="checkbox" required value="yes" className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
-              <span>
-                {c.consentBefore}
-                <Link href="/privacy" className="font-medium text-primary underline underline-offset-4">
-                  {c.consentLink}
-                </Link>
-                {c.consentAfter}
-              </span>
-            </label>
-
             {error && (
-              <p role="alert" className="mt-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+              <p role="alert" className="mt-4 text-sm font-medium text-destructive">
                 {error}
               </p>
             )}
-            {status === "failed" && (
-              <p role="alert" className="mt-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
-                {c.failedBefore}
-                <a href={`mailto:${profile.formInbox}`} className="underline underline-offset-4" dir="ltr">
-                  {profile.formInbox}
-                </a>
-                {c.failedAfter}
-              </p>
-            )}
 
-            <button type="submit" disabled={status === "sending"} className={cn(buttonVariants({ size: "lg" }), "mt-6 h-12 w-full rounded-full text-base sm:w-auto sm:px-8")}>
-              {status === "sending" ? <Loader2 className="animate-spin" /> : <Send className="rtl:-scale-x-100" />}
-              {status === "sending" ? c.sending : c.send}
+            <button type="submit" className={cn(buttonVariants({ size: "lg" }), "mt-6 h-12 w-full rounded-full text-base sm:w-auto sm:px-8")}>
+              <Send className="rtl:-scale-x-100" /> {c.send}
             </button>
           </form>
-          )}
 
           <aside className="flex flex-col gap-6">
             <div className="rounded-3xl bg-ink p-6 text-primary-foreground md:p-8">
