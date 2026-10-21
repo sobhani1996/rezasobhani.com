@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import { ArrowRight, CalendarDays, Check, CircleCheck, Contact as ContactIcon, Copy, FlaskConical, GraduationCap, Landmark, Loader2, Mail, MapPin, Mic, Navigation, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -10,11 +11,6 @@ import { strings } from "@/content/strings";
 import { LinkedinIcon, PageHeader, ResearchGateIcon, ScholarIcon, usePageTitle } from "@/components/site";
 
 const reasonIcons = { collab: FlaskConical, students: GraduationCap, policy: Landmark, talks: Mic } as const;
-
-function mailto(subject: string, body = "") {
-  const params = new URLSearchParams({ subject, body }).toString().replace(/\+/g, "%20");
-  return `mailto:${profile.email}?${params}`;
-}
 
 function downloadVCard() {
   const en = strings.en;
@@ -63,16 +59,18 @@ export default function Contact() {
     window.setTimeout(() => formRef.current?.querySelector<HTMLInputElement>("input[name=name]")?.focus(), 400);
   };
 
-  // Sends through FormSubmit's AJAX endpoint; their "email" field becomes the Reply-To address.
+  // Posts every field as JSON to FormSubmit's AJAX endpoint, which emails it to info@rezasobhani.com.
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
+    // A filled honeypot means a bot: silently do nothing.
+    if (String(data.get("_honey") ?? "") !== "") return;
+
     const name = String(data.get("name") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
-    const affiliation = String(data.get("affiliation") ?? "").trim();
     const message = String(data.get("message") ?? "").trim();
-    if (!name || !/^\S+@\S+\.\S+$/.test(email) || !message) {
+    if (!name || !form.querySelector<HTMLInputElement>("input[name=email]")!.checkValidity() || !email || !message || !data.get("consent")) {
       setError(c.required);
       return;
     }
@@ -84,22 +82,23 @@ export default function Contact() {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          _subject: `Website message: ${reason.subject} — ${name}`,
-          _template: "table",
-          _captcha: "false",
-          _honey: String(data.get("_honey") ?? ""),
-          Topic: reason.title,
+          topic: reason.title,
           name,
           email,
-          Affiliation: affiliation || "—",
-          Message: message,
-          "Site language": language === "fa" ? "Persian" : "English",
+          phone: String(data.get("phone") ?? "").trim(),
+          affiliation: String(data.get("affiliation") ?? "").trim(),
+          message,
+          consent: "yes",
+          language: language === "fa" ? "Persian" : "English",
+          _subject: `New enquiry from ${name} (rezasobhani.com)`,
+          _template: "table",
+          _replyto: email,
+          _honey: "",
         }),
       });
       const result = await res.json().catch(() => ({}));
       if (!res.ok || String(result.success) !== "true") throw new Error(result.message ?? res.statusText);
       setStatus("sent");
-      form.reset();
     } catch {
       setStatus("failed");
     }
@@ -157,7 +156,6 @@ export default function Contact() {
             <div role="status" className="flex flex-col items-start justify-center rounded-3xl border border-primary/30 bg-secondary/60 p-6 md:p-10">
               <CircleCheck className="size-12 text-primary" />
               <h2 className="mt-5 text-2xl font-semibold text-ink md:text-3xl">{c.sentTitle}</h2>
-              <p className="mt-3 max-w-md text-secondary-foreground">{c.sentBody}</p>
               <button type="button" onClick={() => setStatus("idle")} className={cn(buttonVariants({ variant: "outline" }), "mt-6 rounded-full bg-background")}>
                 {c.sendAnother}
               </button>
@@ -196,7 +194,11 @@ export default function Contact() {
                 <span className="mb-1.5 block text-sm font-medium">{c.emailField}</span>
                 <input name="email" type="email" required autoComplete="email" dir="ltr" className={cn(field, "text-start rtl:text-end")} />
               </label>
-              <label className="block sm:col-span-2">
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium">{c.phone}</span>
+                <input name="phone" type="tel" autoComplete="tel" dir="ltr" className={cn(field, "text-start rtl:text-end")} />
+              </label>
+              <label className="block">
                 <span className="mb-1.5 block text-sm font-medium">{c.affiliation}</span>
                 <input name="affiliation" autoComplete="organization" className={field} />
               </label>
@@ -206,17 +208,29 @@ export default function Contact() {
               </label>
             </div>
 
+            <label className="mt-5 flex items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+              <input name="consent" type="checkbox" required value="yes" className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
+              <span>
+                {c.consentBefore}
+                <Link href="/privacy" className="font-medium text-primary underline underline-offset-4">
+                  {c.consentLink}
+                </Link>
+                {c.consentAfter}
+              </span>
+            </label>
+
             {error && (
-              <p role="alert" className="mt-4 text-sm font-medium text-destructive">
+              <p role="alert" className="mt-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
                 {error}
               </p>
             )}
             {status === "failed" && (
-              <p role="alert" className="mt-4 text-sm font-medium text-destructive">
-                {c.failed}{" "}
-                <a href={mailto(`${strings.en.contact.reasons[0].subject}`)} className="underline underline-offset-4" dir="ltr">
-                  {profile.email}
+              <p role="alert" className="mt-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+                {c.failedBefore}
+                <a href={`mailto:${profile.formInbox}`} className="underline underline-offset-4" dir="ltr">
+                  {profile.formInbox}
                 </a>
+                {c.failedAfter}
               </p>
             )}
 

@@ -4,6 +4,7 @@ export const profile = {
   email: "sobhani.r@mums.ac.ir",
   // Contact-form messages are relayed by FormSubmit to this inbox (activated on first submission).
   formEndpoint: "https://formsubmit.co/ajax/info@rezasobhani.com",
+  formInbox: "info@rezasobhani.com",
   calendarUrl: "https://calendar.app.google/nToTptKaC41M8Yrg7",
   links: {
     scholar: "https://scholar.google.com/citations?user=qNxmLSEAAAAJ&hl=en",
