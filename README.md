@@ -27,8 +27,12 @@ pnpm build:pages
 
 The deployable static files are created in the `dist` folder.
 
-## Important notes
+## Updating content
 
-All required images are stored locally in `client/public/images` in this GitHub Pages package. The project is intentionally configured with relative asset paths and hash-based client-side routing, which prevents broken images or page-refresh errors on GitHub Pages.
+All text and data live in `client/src/content/`:
 
-The Manus-hosted version remains available with its managed asset storage. This ZIP is a separate, portable GitHub Pages edition.
+- `profile.ts` — email, booking link, profile links, Google Scholar metrics and citations per year.
+- `publications.ts` — the full publication list. Add a paper by appending an entry; mark `selected: true` to feature it.
+- `strings.ts` — every sentence on the site, in English (`en`) and Persian (`fa`).
+
+The site uses real paths (`/about`, `/fa/about`). Persian pages live under `/fa`. `scripts/postbuild.mjs` writes an `index.html` for every page in both languages, plus `404.html`, `sitemap.xml` and `robots.txt`. Pushing to `main` redeploys automatically.

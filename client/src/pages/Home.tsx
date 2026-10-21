@@ -1,184 +1,171 @@
-/* Organic Modernism / Biophilic design: keep the living, editorial hero composition while using trusted academic metrics and a current research highlight. */
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, BookOpen, Leaf, Users } from "lucide-react";
 import { Link } from "wouter";
+import { ArrowRight, Globe2, Leaf, Scale, Activity, Stethoscope, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { metrics } from "@/content/profile";
+import { publications, topicOrder, type Topic } from "@/content/publications";
+import CitationChart from "@/components/CitationChart";
+import PublicationItem from "@/components/PublicationItem";
+import { ArrowLink, SectionTitle, usePageTitle } from "@/components/site";
+
+export const topicIcons: Record<Topic, typeof Leaf> = {
+  sustainable: Leaf,
+  policy: Scale,
+  epi: Activity,
+  clinical: Stethoscope,
+  behaviour: Users,
+};
 
 export default function Home() {
-  const { t } = useLanguage();
-  const assetBase = `${import.meta.env.BASE_URL}images/`;
+  const { s, num, language } = useLanguage();
+  usePageTitle("home");
+  const photo = `${import.meta.env.BASE_URL}images/profile-photo.jpg`;
+  const recent = publications.filter((p) => p.selected).slice(0, 4);
+
+  const stats = [
+    { value: num(metrics.citations), label: s.home.stats.citations },
+    { value: num(metrics.hIndex), label: s.home.stats.hIndex },
+    { value: num(metrics.i10Index), label: s.home.stats.i10 },
+    { value: `${num(80)}+`, label: s.home.stats.papers },
+  ];
 
   return (
-    <div className="flex flex-col gap-20 pb-20">
-      {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={`${assetBase}hero-bg.png`} 
-            alt="Abstract organic background" 
-            className="w-full h-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/50 to-background" />
-        </div>
-
-        <div className="container relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-in slide-in-from-bottom-10 duration-700 fade-in">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-sm">
-              <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
-              {t('home.hero.role')}
-            </div>
-            
-            <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground text-balance leading-[1.1]">
-              {t('home.hero.title.prefix')} <span className="text-primary italic">{t('home.hero.title.highlight')}</span> {t('home.hero.title.suffix')}
-            </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              {t('home.hero.desc')}
+    <>
+      {/* Hero */}
+      <section className="paper-grain border-b border-border/70">
+        <div className="container grid items-center gap-12 py-14 md:py-20 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <p className="eyebrow">{s.home.eyebrow}</p>
+            <h1 className="mt-5 text-5xl font-semibold leading-[1.02] text-ink md:text-7xl">{s.name}</h1>
+            <p className="mt-4 text-lg font-medium text-primary">
+              {s.title} · {s.university}
             </p>
-            
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="rounded-full text-base px-8 h-12" asChild>
-                <Link href="/research">{t('home.hero.explore')}</Link>
-              </Button>
-              <Button variant="outline" size="lg" className="rounded-full text-base px-8 h-12 bg-background/50 backdrop-blur-sm hover:bg-background/80" asChild>
-                <Link href="/publications">{t('home.hero.publications')}</Link>
-              </Button>
+            <p className="mt-8 max-w-xl font-serif text-2xl leading-snug text-foreground/90 italic text-balance md:text-[1.75rem]">{s.home.headline}</p>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg text-pretty">{s.home.lede}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/research" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>
+                {s.home.ctaResearch}
+                <ArrowRight className="rtl:rotate-180" />
+              </Link>
+              <Link href="/contact" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 rounded-full bg-background/60 px-7 text-base")}>
+                {s.home.ctaContact}
+              </Link>
             </div>
           </div>
-          
-          {/* Hero Visual/Stats */}
-          <div className="relative animate-in slide-in-from-right-10 duration-1000 fade-in delay-200 mt-12 lg:mt-0">
-            <div className="relative z-10">
-              <div className="relative w-full max-w-[320px] md:max-w-[400px] aspect-[4/5] mx-auto">
-                {/* Organic shape background blob */}
-                <div className="absolute inset-0 bg-secondary/50 rounded-[60%_40%_30%_70%/60%_30%_70%_40%] rotate-6 scale-110 blur-sm" />
-                
-                {/* Photo container */}
-                <div className="relative w-full h-full overflow-hidden rounded-[60%_40%_30%_70%/60%_30%_70%_40%] shadow-2xl border-4 border-white/50">
-                  <img 
-                    src={`${assetBase}profile-photo.jpg`} 
-                    alt={t('home.hero.role')} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
 
-                {/* Floating Stats Cards - Hidden on small mobile to prevent overflow */}
-                <Card className="hidden sm:block absolute -left-4 md:-left-12 top-10 md:top-20 w-40 md:w-48 bg-white/80 backdrop-blur-md border-none shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-left-5 delay-500">
-                  <CardContent className="p-3 md:p-4 flex items-center gap-3 md:gap-4">
-                    <div className="p-2 bg-primary/10 rounded-full text-primary">
-                      <BookOpen className="w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    <div>
-                      <div className="text-xl md:text-2xl font-serif font-bold text-foreground">86</div>
-                      <div className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase">{t('home.stats.publications')}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="hidden sm:block absolute -right-4 md:-right-8 bottom-20 md:bottom-32 w-40 md:w-48 bg-white/80 backdrop-blur-md border-none shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-right-5 delay-700">
-                  <CardContent className="p-3 md:p-4 flex items-center gap-3 md:gap-4">
-                    <div className="p-2 bg-accent/20 rounded-full text-accent-foreground">
-                      <Users className="w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    <div>
-                      <div className="text-xl md:text-2xl font-serif font-bold text-foreground">938</div>
-                      <div className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase">{t('home.stats.citations')}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+          <div className="relative mx-auto w-full max-w-sm animate-in fade-in zoom-in-95 duration-700 lg:max-w-none">
+            <div className="absolute -inset-3 rounded-[2rem] bg-secondary rotate-2" aria-hidden="true" />
+            <img
+              src={photo}
+              alt={s.name}
+              width={1536}
+              height={2048}
+              className="relative aspect-[4/5] w-full rounded-[1.75rem] object-cover object-[50%_30%] shadow-xl"
+            />
           </div>
+        </div>
+
+        {/* Roles strip */}
+        <div className="border-t border-border/70 bg-background/70">
+          <ul className="container grid divide-y divide-border/70 sm:grid-cols-3 sm:divide-y-0 sm:divide-x rtl:sm:divide-x-reverse">
+            {s.roles.map((role) => (
+              <li key={role.label} className="py-5 sm:px-6 first:sm:ps-0">
+                <p className="font-serif text-base font-semibold text-ink">{role.label}</p>
+                <p className="text-sm text-muted-foreground">{role.org}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* Research Focus Preview */}
+      {/* Metrics + chart */}
+      <section className="container py-16 md:py-24">
+        <SectionTitle title={s.home.metricsTitle} />
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <dl className="grid grid-cols-2 gap-4">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-border bg-card p-5 md:p-6">
+                <dt className="text-sm text-muted-foreground">{stat.label}</dt>
+                <dd className="mt-2 font-serif text-4xl font-semibold tabular-nums text-ink md:text-5xl">{stat.value}</dd>
+              </div>
+            ))}
+            <p className="col-span-2 text-xs text-muted-foreground">
+              {s.home.metricsNote} · {metrics.asOf[language]}
+            </p>
+          </dl>
+          <CitationChart />
+        </div>
+      </section>
+
+      {/* WHO highlight */}
       <section className="container">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div className="space-y-2">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold">{t('home.research.title')}</h2>
-            <p className="text-muted-foreground max-w-md">{t('home.research.desc')}</p>
-          </div>
-          <Button variant="ghost" className="group" asChild>
-            <Link href="/research">
-              {t('home.research.viewAll')} <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              title: t('home.research.sustainable.title'),
-              desc: t('home.research.sustainable.desc'),
-              icon: Leaf,
-              color: "bg-green-100 text-green-700"
-            },
-            {
-              title: t('home.research.policy.title'),
-              desc: t('home.research.policy.desc'),
-              icon: BookOpen,
-              color: "bg-blue-100 text-blue-700"
-            },
-            {
-              title: t('home.research.public.title'),
-              desc: t('home.research.public.desc'),
-              icon: Users,
-              color: "bg-orange-100 text-orange-700"
-            }
-          ].map((item, i) => (
-            <div key={i} className="group relative overflow-hidden rounded-3xl bg-card border border-border/50 p-8 transition-all hover:shadow-lg hover:border-primary/20">
-              <div className={`w-12 h-12 rounded-2xl ${item.color} flex items-center justify-center mb-6 transition-transform group-hover:scale-110`}>
-                <item.icon className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 font-serif">{item.title}</h3>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                {item.desc}
-              </p>
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Publication */}
-      <section className="container">
-        <div className="relative rounded-[2rem] overflow-hidden bg-secondary/30 border border-border/50">
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-          
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 p-8 md:p-16 items-center">
-            <div className="space-y-6">
-              <div className="inline-block text-primary font-bold tracking-wider text-sm uppercase">{t('home.featured.label')}</div>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold leading-tight">
-                {t('home.featured.title')}
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                {t('home.featured.desc')}
-              </p>
-              <div className="flex gap-4 pt-4">
-                <Button asChild>
-                  <a href="https://doi.org/10.1111/1477-8947.70074" target="_blank" rel="noopener noreferrer">
-                    {t('home.featured.read')}
-                  </a>
-                </Button>
-                <Button variant="outline" className="bg-transparent" asChild>
-                  <Link href="/publications">{t('home.featured.seeAll')}</Link>
-                </Button>
-              </div>
-            </div>
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500">
-              <img 
-                src={`${assetBase}research-banner.png`} 
-                alt="Research visualization" 
-                className="w-full h-full object-cover"
-              />
+        <div className="relative overflow-hidden rounded-3xl bg-ink px-6 py-10 text-primary-foreground md:px-12 md:py-14">
+          <Globe2 className="absolute -end-10 -top-10 size-64 text-primary-foreground/[0.06]" aria-hidden="true" />
+          <div className="relative grid gap-6 md:grid-cols-[auto_1fr] md:items-start">
+            <span className="grid size-12 place-items-center rounded-full bg-primary-foreground/10">
+              <Globe2 className="size-6" />
+            </span>
+            <div className="max-w-3xl">
+              <h2 className="text-2xl font-semibold text-primary-foreground md:text-3xl">{s.home.whoTitle}</h2>
+              <p className="mt-3 text-base leading-relaxed text-primary-foreground/80 md:text-lg">{s.home.whoBody}</p>
             </div>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Themes */}
+      <section className="container py-16 md:py-24">
+        <SectionTitle title={s.home.themesTitle} link={{ href: "/research", label: s.home.themesLink }} />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {topicOrder.map((topic) => {
+            const Icon = topicIcons[topic];
+            const count = publications.filter((p) => p.topics.includes(topic)).length;
+            return (
+              <Link
+                key={topic}
+                href={`/research#${topic}`}
+                className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+              >
+                <span className="grid size-10 place-items-center rounded-xl bg-secondary text-primary">
+                  <Icon className="size-5" />
+                </span>
+                <h3 className="mt-4 text-lg font-semibold leading-snug text-ink">{s.topics[topic].title}</h3>
+                <p className="mt-auto pt-4 text-sm text-muted-foreground">
+                  {num(count)} {s.research.papers}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Recent publications */}
+      <section className="border-y border-border/70 bg-muted/60">
+        <div className="container py-16 md:py-20">
+          <SectionTitle title={s.home.recentTitle} link={{ href: "/publications", label: s.home.recentLink }} />
+          <div className="grid gap-8 md:grid-cols-2">
+            {recent.map((pub) => (
+              <div key={pub.title} className="rounded-2xl border border-border bg-card p-6">
+                <PublicationItem pub={pub} showYear={false} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact CTA */}
+      <section className="container pt-16 md:pt-24">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl border border-border bg-card p-8 md:flex-row md:items-center md:p-12">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold text-ink md:text-3xl">{s.home.contactTitle}</h2>
+            <p className="mt-2 text-muted-foreground md:text-lg">{s.home.contactBody}</p>
+          </div>
+          <ArrowLink href="/contact" className={cn(buttonVariants({ size: "lg" }), "h-12 shrink-0 rounded-full px-7 text-base text-primary-foreground hover:no-underline")}>
+            {s.home.contactBtn}
+          </ArrowLink>
+        </div>
+      </section>
+    </>
   );
 }

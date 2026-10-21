@@ -4,9 +4,9 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { defineConfig } from "vite";
 
-// GitHub Pages exports use hash routing and relative asset paths so the site works for any repository name.
+// Served from the root of rezasobhani.com, with real paths (/about, /fa/about); scripts/postbuild.mjs adds per-route HTML.
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [react(), tailwindcss(), jsxLocPlugin()],
   resolve: {
     alias: {
