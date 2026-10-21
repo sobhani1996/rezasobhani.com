@@ -8,7 +8,9 @@ import { profile } from "@/content/profile";
 import { LinkedinIcon, ResearchGateIcon, ScholarIcon, useOtherLanguageHref } from "@/components/site";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const [rawLocation] = useLocation();
+  // GitHub Pages serves /about as /about/; compare without the trailing slash.
+  const location = rawLocation.replace(/\/+$/, "") || "/";
   const [menuOpen, setMenuOpen] = useState(false);
   const { s, language } = useLanguage();
   const otherHref = useOtherLanguageHref();

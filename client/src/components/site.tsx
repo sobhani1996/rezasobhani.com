@@ -18,7 +18,7 @@ export function usePageTitle(key: keyof Strings["meta"]) {
 export function useOtherLanguageHref() {
   const { language } = useLanguage();
   const [path] = useLocation();
-  const rest = path === "/" ? "" : path;
+  const rest = path.replace(/\/+$/, "");
   return language === "fa" ? `~${rest || "/"}` : `~/fa${rest}`;
 }
 
