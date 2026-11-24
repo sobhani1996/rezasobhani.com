@@ -41,7 +41,7 @@ export default function Home() {
             <p className="mt-4 text-lg font-medium text-primary">
               {s.title} · {s.university}
             </p>
-            <p className="mt-8 max-w-xl font-serif text-2xl leading-snug text-foreground/90 italic text-balance md:text-[1.75rem]">{s.home.headline}</p>
+            <p className="mt-8 max-w-xl font-serif font-quote text-2xl leading-snug text-foreground/90 italic text-balance md:text-[1.75rem]">{s.home.headline}</p>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg text-pretty">{s.home.lede}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/research/" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-full px-7 text-base")}>

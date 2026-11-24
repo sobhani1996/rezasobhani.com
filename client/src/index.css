@@ -33,6 +33,7 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, serif;
   --font-persian: "Vazirmatn", "Inter", sans-serif;
+  --font-persian-serif: "Noto Naskh Arabic", "Vazirmatn", serif;
 }
 
 :root {
@@ -80,16 +81,6 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "ss01", "cv11";
-  }
-  body.font-persian,
-  body.font-persian h1,
-  body.font-persian h2,
-  body.font-persian h3,
-  body.font-persian h4,
-  body.font-persian .font-serif {
-    font-family: var(--font-persian);
-    letter-spacing: 0;
-    font-style: normal;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif text-foreground;
@@ -158,4 +149,24 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Persian/Sorani overrides. Kept outside @layer on purpose: Tailwind utilities
+   (font-serif, italic) live in a layer and would otherwise beat these rules,
+   drawing Persian text in the Latin serif with a fake slant. */
+body.font-persian,
+body.font-persian h1,
+body.font-persian h2,
+body.font-persian h3,
+body.font-persian h4,
+body.font-persian .font-serif {
+  font-family: var(--font-persian);
+  letter-spacing: 0;
+  font-style: normal;
+}
+/* The home-page headline is a quote-like line: a Naskh book face plays the role
+   the italic serif plays in English. */
+body.font-persian .font-quote {
+  font-family: var(--font-persian-serif);
+  line-height: 1.75;
 }
